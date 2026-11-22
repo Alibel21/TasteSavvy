@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>知味</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Microsoft YaHei",sans-serif;background:#f5f5f2;color:#222}
+header{background:#2e7d4f;color:#fff;padding:14px 24px;font-size:18px;font-weight:bold;cursor:pointer}
+header small{margin-left:12px;font-weight:normal;font-size:13px;opacity:.85}
+.top{max-width:760px;margin:0 auto;padding:22px 16px 6px;text-align:center}
+#markerBtn{border:0;background:#fff3d6;color:#a35a00;font-size:17px;font-weight:bold;padding:12px 26px;border-radius:30px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);animation:bob 1.6s ease-in-out infinite}
+#markerBtn:hover{background:#ffe7a8}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+#markerWrap{margin-bottom:16px}
+#sf{display:flex;align-items:center;background:#fff;border:2px solid #2e7d4f;border-radius:28px;padding:4px 6px 4px 18px}
+#q{flex:1;border:0;outline:0;font-size:16px;padding:10px 0;background:transparent}
+.cam{cursor:pointer;font-size:22px;padding:4px 10px}
+#sf button{border:0;background:#2e7d4f;color:#fff;border-radius:22px;padding:9px 20px;font-size:15px;cursor:pointer}
+#status{margin-top:10px;font-size:14px;color:#555;min-height:18px}
+#status button{margin:6px 6px 0 0;padding:6px 14px;border:1px solid #2e7d4f;background:#fff;color:#2e7d4f;border-radius:16px;cursor:pointer}
+#view{padding:10px 24px 40px}
+.back{border:0;background:none;color:#2e7d4f;font-size:14px;cursor:pointer;padding:6px 0;margin-bottom:6px}
+.sec{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sec h3{margin:0 0 8px;font-size:16px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:10px 6px;border-top:1px solid #eee;cursor:pointer}
+.srow:hover{background:#f4faf6}
+.sub{font-size:13px;color:#888;margin-top:2px}
+.cnt{font-size:14px;color:#555;white-space:nowrap}
+.price{color:#888;font-size:13px;margin-left:6px;font-weight:normal}
+.rcard{max-width:760px;margin:10px auto;background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.rtitle{font-size:13px;color:#2e7d4f;font-weight:bold;margin-bottom:6px}
+.bigname{font-size:24px;font-weight:bold}
+.pair{margin-top:8px;font-size:14px;background:#f4faf6;padding:8px 10px;border-radius:8px}
+.rbtn{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.rbtn button,.btns button{border:1px solid #ddd;background:#fff;border-radius:16px;padding:6px 14px;font-size:14px;cursor:pointer}
+.rbtn button:hover,.btns button:hover{background:#f4f4f4}
+.btns button.on{background:#ffe9e0;border-color:#ff8a5c}
+.msg{margin-top:8px;font-size:13px;color:#2e7d4f}
+.notice{background:#fff8e1;color:#8a6d00;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+.dish{padding:12px 0;border-top:1px solid #eee}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dname{font-size:16px;font-weight:bold}
+.tags{font-size:12px;color:#999;margin-top:3px}
+.rside{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.bdg{font-size:12px;padding:2px 9px;border-radius:10px;white-space:nowrap;font-weight:bold}
+.bdg.like{background:#fff1e6;color:#b45309}.bdg.fav{background:#fff8d6;color:#8a6d00}
+.bdg.rev{background:#e8f0fe;color:#1a56a0}.bdg.taste{background:#e6f6ec;color:#1e7a46}
+.sortbar{margin:2px 0 8px;font-size:13px;color:#666}
+.chip{display:inline-block;padding:4px 12px;margin-left:6px;border-radius:14px;background:#eee;cursor:pointer}
+.chip.on{background:#2e7d4f;color:#fff}
+.revbox{margin-top:8px;padding:8px 10px;background:#fafafa;border-radius:8px;font-size:14px;color:#555}
+.revbox div.r{padding:3px 0}
+.add{display:flex;gap:6px;margin-top:8px}
+.add input{flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.add button{padding:7px 16px;background:#2e7d4f;color:#fff;border:0;border-radius:6px;cursor:pointer}
+.empty{text-align:center;color:#888;padding:30px}
+.hint{text-align:center;font-size:12px;color:#999;padding:0 16px 24px}
+</style>
+</head>
+<body>
+<header data-act="home">知味<small>不再纠结吃什么！</small></header>
+<div class="top">
+  <div id="markerWrap"><button id="markerBtn" data-act="rnd">🍱 今天吃什么？点我随机</button></div>
+  <form id="sf">
+    <input id="q" placeholder="搜索食堂、菜品或口味，如：宫保鸡丁（多个词用空格隔开）" autocomplete="off">
+    <label class="cam" title="上传窗口照片，识别是哪个窗口">📷<input type="file" id="pic" accept="image/*" hidden></label>
+    <button type="submit">搜索</button>
+  </form>
+  <div id="status"></div>
+</div>
+<div id="view"></div>
+<div class="hint">人气 = 点赞数 + 收藏数。页面中的点赞、收藏数为演示用示例数据；你自己的点赞、收藏、评价保存在本机浏览器中。</div>
+
+<script>
+// ================= 食堂数据（来自你整理的文档） =================
+// k: meal=能单独成餐  dish=菜  side=小食(单点不成一餐，推荐时配同窗口主食)
+// t: 口味标签，按菜名规则自动标注，待核对     s: 初始点赞 [清淡型, 嗜辣型]，目前全为0
+const TYPES=["清淡型","嗜辣型"];
+const TYPE_TAGS={"清淡型":["清淡","素","低脂"],"嗜辣型":["辣"]};
+const CANTEENS=[
+ {name:"颐三",windows:[
+  {id:"W1",name:"锅仔锡纸",dishes:[
+   {"n":"锡纸辣花蛤","p":22,"k":"dish","t":["荤","辣","海鲜"],"s":[0,0]},
+   {"n":"锡纸冒鸭血","p":18,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔羊杂","p":28,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔番茄牛腩","p":35,"k":"dish","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"锅仔鸡杂","p":32,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔鸭血豆腐","p":22,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔酸菜肥牛","p":30,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔老母鸡","p":34,"k":"dish","t":["荤","清淡"],"s":[0,0]},
+   {"n":"锅仔三鲜","p":28,"k":"dish","t":["荤","清淡","低脂"],"s":[0,0]},
+   {"n":"锅仔鲜虾豆腐","p":28,"k":"dish","t":["荤","海鲜","清淡","低脂"],"s":[0,0]},
+   {"n":"锅仔酸菜白肉","p":28,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"锅仔番茄丸子","p":36,"k":"dish","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"锅仔粉丝丸子","p":36,"k":"dish","t":["荤"],"s":[0,0]}]},
+  {id:"W2",name:"盖饭系列",dishes:[
+   {"n":"小炒肝尖盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"尖椒鸡丝盖饭","p":16,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"土豆肉丝盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"土豆鸡丝盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香菇肉片盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"木耳肉片盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"土豆肉片盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"尖椒肉片盖饭","p":16,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"宫保鸡丁盖饭","p":16,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"辣子鸡丁盖饭","p":16,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"酱爆鸡丁盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"泡椒香干肉丝盖饭","p":15,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"腐竹炒肉盖饭","p":17,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"番茄肥牛盖饭","p":16,"k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"金针肥牛盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"茄子红烧肉","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"小炒鸡杂盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"小炒肉盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"回锅肉盖饭","p":18,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"咖喱鸡块盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香干回锅肉盖饭","p":18,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"土豆烧鸡块盖饭","p":18,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"红烧肉盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"泡椒肥肠盖饭","p":22,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"黑椒牛肉盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"滑蛋牛柳盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"小炒牛肉盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"土豆牛肉盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"红烧排骨盖饭","p":20,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"土豆排骨盖饭","p":20,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"鹌鹑蛋红烧肉盖饭","p":20,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"京酱肉丝盖饭","p":22,"k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"土豆红烧肉盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"孜然肥牛盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"溜腰花盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"溜肥肠盖饭","p":22,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"尖椒肥牛盖饭","p":22,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"西红柿烧牛肉盖饭","p":22,"k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"酸辣土豆丝盖饭","p":13,"k":"meal","t":["素","辣"],"s":[0,0]},
+   {"n":"肉沫酸豆角盖饭","p":14,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"尖椒土豆片盖饭","p":14,"k":"meal","t":["素","辣"],"s":[0,0]},
+   {"n":"地三鲜盖饭","p":14,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"烧茄子盖饭","p":14,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"炝炒圆白菜盖饭","p":14,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"红烧日本豆腐盖饭","p":14,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"鱼香日本豆腐盖饭","p":15,"k":"meal","t":["素","酸甜"],"s":[0,0]},
+   {"n":"鱼香茄子盖饭","p":15,"k":"meal","t":["素","酸甜"],"s":[0,0]},
+   {"n":"肉沫豆腐盖饭","p":15,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"手撕包菜盖饭","p":15,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"小炒香干盖饭","p":15,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"小炒菜花盖饭","p":15,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"肉沫水晶粉盖饭","p":15,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"西红柿鸡蛋盖饭","p":15,"k":"meal","t":["素","酸甜","清淡"],"s":[0,0]},
+   {"n":"韭菜鸡蛋盖饭","p":15,"k":"meal","t":["素","清淡"],"s":[0,0]},
+   {"n":"尖椒鸡蛋盖饭","p":15,"k":"meal","t":["素","辣"],"s":[0,0]},
+   {"n":"剁椒鸡蛋盖饭","p":15,"k":"meal","t":["素","辣"],"s":[0,0]},
+   {"n":"腐竹白菜盖饭","p":15,"k":"meal","t":["素","清淡"],"s":[0,0]},
+   {"n":"木须肉盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"鱼香肉丝盖饭","p":16,"k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"尖椒肉丝盖饭","p":16,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"小炒千叶豆腐盖饭","p":16,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"包菜五花肉盖饭","p":16,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"蛋炒饭","p":13,"k":"meal","t":["素","清淡"],"s":[0,0]},
+   {"n":"鸡蛋火腿炒饭","p":14,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"什锦炒饭","p":15,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"扬州炒饭","p":18,"k":"meal","t":["荤"],"s":[0,0]}]},
+  {id:"W3",name:"经典家常",dishes:[
+   {"n":"锅烧鱼头","p":68,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"功夫鱼头","p":48,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"酥皮大虾","p":48,"k":"dish","t":["荤","海鲜"],"s":[0,0]},
+   {"n":"菠萝油条虾","p":48,"k":"dish","t":["荤","酸甜","海鲜"],"s":[0,0]},
+   {"n":"大虾白菜","p":38,"k":"dish","t":["荤","海鲜","清淡","低脂"],"s":[0,0]},
+   {"n":"水煮肉片","p":38,"k":"dish","t":["荤","辣"],"s":[0,0]},
+   {"n":"糖醋里脊","p":28,"k":"dish","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"菠萝咕噜肉","p":28,"k":"dish","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"宫保鸡丁","p":28,"k":"dish","t":["荤","辣"],"s":[0,0]},
+   {"n":"京酱肉丝","p":32,"k":"dish","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"小炒肉","p":35,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"干煸豆角","p":16,"k":"dish","t":["素"],"s":[0,0]},
+   {"n":"回锅肉","p":48,"k":"dish","t":["荤","辣"],"s":[0,0]},
+   {"n":"山药炒木耳","p":48,"k":"dish","t":["素","清淡","低脂"],"s":[0,0]},
+   {"n":"辣子鸡","p":48,"k":"dish","t":["荤","辣"],"s":[0,0]},
+   {"n":"干锅肥肠","p":48,"k":"dish","t":["荤","辣"],"s":[0,0]},
+   {"n":"酸菜鱼","p":38,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"小炒黄牛肉","p":38,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"红烧排骨","p":38,"k":"dish","t":["荤"],"s":[0,0]},
+   {"n":"麻婆豆腐","p":28,"k":"dish","t":["素","辣"],"s":[0,0]},
+   {"n":"干锅千叶豆腐","p":26,"k":"dish","t":["素","辣"],"s":[0,0]}]},
+  {id:"W4",name:"汉堡",dishes:[
+   {"n":"双层嫩香芝士堡","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"奥尔良板烧堡","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"至珍鲜虾堡","p":13,"k":"meal","t":["荤","海鲜"],"s":[0,0]},
+   {"n":"双层嫩香汉堡","p":10,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"深海鳕鱼堡","p":13,"k":"meal","t":["荤","海鲜"],"s":[0,0]},
+   {"n":"鸡柳堡","p":8,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香肠芝士堡","p":13,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香煎鸡腿汉堡","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"薯条","p":10,"k":"side","t":["素"],"s":[0,0]},
+   {"n":"香酥鸡翅","p":9,"pt":"¥9/2块","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"无骨鸡柳","p":10,"pt":"¥10/6条","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"纯肉肠","p":5,"k":"side","t":["荤"],"s":[0,0]},
+   {"n":"奥尔良烤翅","p":9,"pt":"¥9/1对","k":"side","t":["素"],"s":[0,0]},
+   {"n":"香甜玉米粒","p":10,"k":"side","t":["素","甜"],"s":[0,0]},
+   {"n":"香酥薯格","p":15,"pt":"¥15/2块","k":"side","t":["素"],"s":[0,0]},
+   {"n":"葡式蛋挞","p":4,"pt":"¥4/个","k":"side","t":["素","甜"],"s":[0,0]}]},
+  {id:"W5",name:"披萨",dishes:[
+   {"n":"土豆培根披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"什锦水果披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"香浓芝士披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["素"],"s":[0,0]},
+   {"n":"照烧鸡肉披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"菠萝蜜披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"奥尔良烤肉披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"超级夏威夷披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香蕉巧克力披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"泰式鸡肉菠萝披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"香酥鸡肉菠萝披萨","p":19.9,"pt":"¥19.9/7寸 · ¥29.9/9寸","k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"榴莲披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"荔枝薯泥披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"金牌土豆披萨","p":69,"pt":"¥69/10寸 · ¥99/13寸","k":"meal","t":["素"],"s":[0,0]},
+   {"n":"香肠薯泥披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"香肠玉米披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"金沙咸蛋黄香酥鸡披萨","p":29,"pt":"¥29/7寸 · ¥39/9寸","k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"巧克力薄脆披萨","p":19.9,"k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"榴莲薄脆披萨","p":29.9,"k":"meal","t":["素","甜"],"s":[0,0]},
+   {"n":"金枪鱼薄脆披萨","p":29.9,"k":"meal","t":["荤","海鲜"],"s":[0,0]},
+   {"n":"照烧鸡肉薄脆披萨","p":19.9,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"奥尔良烤肉薄脆披萨","p":19.9,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"焗玉米粒","p":15,"pt":"¥15/份","k":"side","t":["素"],"s":[0,0]},
+   {"n":"焗榴莲","p":39,"pt":"¥39/份","k":"side","t":["素","甜"],"s":[0,0]},
+   {"n":"焗红薯","p":18,"pt":"¥18/份","k":"side","t":["素","甜"],"s":[0,0]},
+   {"n":"焗红豆","p":18,"pt":"¥18/份","k":"side","t":["素","甜"],"s":[0,0]}]}
+ ]},
+ {name:"颐一",windows:[
+  {id:"Y16",name:"16号 淮南牛肉汤",dishes:[
+   {"n":"纯牛汤","p":5,"k":"side","t":["荤"],"s":[0,0]},
+   {"n":"牛肉","p":9,"pt":"¥9/两","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"牛汤水晶粉","p":5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛肚","p":5,"pt":"¥5/两","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"牛汤土豆粉","p":5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛杂","p":2,"pt":"¥2/两","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"牛心","p":4,"pt":"¥4/两","k":"side","t":["荤"],"s":[0,0]},
+   {"n":"牛汤红薯粉","p":6,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛汤方便面","p":6,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"炸馒头片（清汤）","p":1,"pt":"¥1/个","k":"side","t":["素"],"s":[0,0]},
+   {"n":"牛杂牛汤套餐（任意粉+烧饼+小菜）","p":9,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛心牛汤套餐（任意粉+烧饼+小菜）","p":10,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛肚牛汤套餐（任意粉+烧饼+小菜）","p":11,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛丸牛汤套餐（任意粉+烧饼+小菜）","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"牛肉牛汤套餐（任意粉+烧饼+小菜）","p":13,"k":"meal","t":["荤"],"s":[0,0]}]},
+  {id:"Y17",name:"17号 啤酒烤鸭",dishes:[
+   {"n":"肉沫擂椒拌饭","p":13,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"韩式鸡肉煲仔饭","p":13,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"番茄肥牛煲仔饭","p":14,"k":"meal","t":["荤","酸甜"],"s":[0,0]},
+   {"n":"黄焖鸡煲仔饭","p":13,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"辣白菜五花肉煲仔饭","p":13,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"擂椒鸡排煲仔饭（霸王鸡排+擂椒皮蛋酱）","p":13,"k":"meal","t":["荤","辣"],"s":[0,0]}]},
+  {id:"Y18",name:"18号 新派炒饭、炒方便面",dishes:[
+   {"n":"素菜蛋炒饭、炒饼","p":8,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"荤菜炒饭、炒饼","p":12,"k":"meal","t":["荤"],"s":[0,0]}]},
+  {id:"Y19",name:"19号 手工水饺",dishes:[
+   {"n":"猪肉茴香","p":7.5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"猪肉白菜","p":7.5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"猪肉韭菜","p":7.5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"肉三鲜","p":8,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"猪肉白萝卜","p":7.5,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"馄饨","p":2,"pt":"¥2/碗","k":"side","t":[],"s":[0,0]}]},
+  {id:"Y20",name:"20号 刀削面",dishes:[
+   {"n":"浓香烧肉面","p":10,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"红烧鸡块面","p":10,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"西红柿鸡蛋面","p":6,"k":"meal","t":["素","酸甜","清淡"],"s":[0,0]},
+   {"n":"茄子肉丁面","p":7,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"鸡蛋酱面","p":8,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"红烧肥牛面","p":12,"k":"meal","t":["荤"],"s":[0,0]}]},
+  {id:"Y21",name:"21号 重庆小面",dishes:[
+   {"n":"红烧牛肉面","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"红烧排骨面","p":12,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"酸菜肉丝面","p":7,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"重庆小面","p":6,"k":"meal","t":["辣"],"s":[0,0]},
+   {"n":"鸡胗面","p":8,"k":"meal","t":["荤"],"s":[0,0]},
+   {"n":"油泼面","p":8,"k":"meal","t":["辣"],"s":[0,0]},
+   {"n":"葱油拌面","p":8,"k":"meal","t":["素"],"s":[0,0]},
+   {"n":"椒麻鸡拌面","p":14,"k":"meal","t":["荤","辣"],"s":[0,0]},
+   {"n":"宜宾燃面","p":8,"k":"meal","t":["辣"],"s":[0,0]}]}
+ ]}
+];
+// 演示用示例数据：点赞、收藏数按菜品编号生成固定的伪随机数（每次打开相同）
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+CANTEENS.forEach(c=>c.windows.forEach(w=>w.dishes.forEach(d=>{
+  const r=mulberry32(hashStr(w.id+"|"+d.n));
+  const total=Math.round(Math.pow(r(),2.2)*36);            // 多数偏低、少数较高
+  const spicy=d.t.includes("辣"), light=d.t.some(t=>t==="清淡"||t==="低脂"||t==="素");
+  const a=Math.round(total*(spicy?0.15:light?0.6:0.4));      // 按口味类型拆分：[清淡型, 嗜辣型]
+  d.s=[a,total-a];
+  d.f=Math.round(total*(0.15+r()*0.35));                     // 收藏数
+})));
+// 口味同义词：把常见说法归到标签
+const SYN={"不油腻":"清淡","养胃":"清淡","不上火":"清淡","爽口":"清淡","清爽":"清淡","清淡":"清淡",
+ "素食":"素","吃素":"素","蔬菜":"素","素":"素","麻辣":"辣","香辣":"辣","辣":"辣",
+ "减脂":"低脂","减肥":"低脂","健康":"低脂","低脂":"低脂",
+ "酸甜":"酸甜","荤":"荤","吃肉":"荤","海鲜":"海鲜","海味":"海鲜","甜品":"甜","甜点":"甜","甜":"甜"};
+
+// ================= 数据索引 =================
+const ALL=[], WINS={}, BY={};
+CANTEENS.forEach(c=>c.windows.forEach(w=>{
+  WINS[w.id]={...w,canteen:c.name};
+  w.dishes.forEach(d=>{const x={id:w.id+"|"+d.n,canteen:c.name,win:w,dish:d};ALL.push(x);BY[x.id]=x;});
+}));
+
+// ================= 本机存储 =================
+const KEY="canteen_v4";
+let S={d:{},tag:{}};
+try{S=JSON.parse(localStorage.getItem(KEY))||S}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const rec=id=>S.d[id]||(S.d[id]={like:0,fav:0,myLike:false,myFav:false,rev:[]});
+const likes=x=>x.dish.s.reduce((a,b)=>a+b,0)+rec(x.id).like;
+const favs=x=>(x.dish.f||0)+rec(x.id).fav;
+const pop=x=>likes(x)+favs(x);
+const nrev=x=>rec(x.id).rev.length;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtP=d=>d.pt||("¥"+d.p);
+const norm=s=>s.replace(/第/g,"").trim();
+
+// ================= 偏好与随机推荐 =================
+function addPref(dish,delta){dish.t.forEach(t=>S.tag[t]=(S.tag[t]||0)+delta);save();}
+function myType(){
+  let best=null,bs=0;
+  TYPES.forEach(ty=>{const v=TYPE_TAGS[ty].reduce((a,t)=>a+(S.tag[t]||0),0);if(v>bs){bs=v;best=ty}});
+  return best;
+}
+function weight(x){
+  const r=rec(x.id);
+  let w=1+Math.sqrt(pop(x))*0.8;                                   // 人气
+  const taste=x.dish.t.reduce((a,t)=>a+(S.tag[t]||0),0); // 个人口味
+  if(taste>0) w*=1+Math.min(taste,6)*0.4;
+  if(taste<0) w*=0.3;
+  w*=(r.myLike||r.myFav)?0.4:1.4;                        // 探索：没点赞收藏过的优先
+  const ty=myType();                                      // 同口味类型同学的点赞
+  if(ty) w+=Math.sqrt(x.dish.s[TYPES.indexOf(ty)])*0.8;
+  return Math.max(w,0.05);
+}
+function wpick(arr,f){
+  const ws=arr.map(f);let r=Math.random()*ws.reduce((a,b)=>a+b,0);
+  for(let i=0;i<arr.length;i++){r-=ws[i];if(r<=0)return arr[i]}
+  return arr[arr.length-1];
+}
+function reasonOf(x){
+  const m=x.dish.t.filter(t=>(S.tag[t]||0)>0);
+  if(m.length) return "和你点赞、收藏过的「"+m.join("」「")+"」口味相近";
+  return Object.values(S.tag).some(v=>v>0)?"和你以往的偏好不同，换个新口味试试":"还没有你的偏好记录，先随机推荐";
+}
+let RC=null;
+function pickRec(){
+  const last=RC&&RC.x.id;
+  const x=wpick(ALL.filter(y=>y.id!==last),weight);
+  let pair=null;
+  if(x.dish.k==="staple"){
+    const dp=ALL.filter(y=>y.canteen===x.canteen&&y.dish.k==="dish");
+    if(dp.length) pair=wpick(dp,weight);
+  } else if(x.dish.k==="side"){
+    const mp=ALL.filter(y=>y.win.id===x.win.id&&y.dish.k==="meal");
+    if(mp.length) pair=wpick(mp,weight);
+  }
+  RC={x,pair,msg:"",reason:reasonOf(x)};render();
+}
+
+// ================= 页面 =================
+let stack=[{p:"home"}];
+const cur=()=>stack[stack.length-1];
+function go(s){stack.push(s);render();window.scrollTo(0,0)}
+function render(){
+  const s=cur();
+  document.getElementById("markerWrap").style.display=s.p==="home"?"block":"none";
+  document.getElementById("view").innerHTML=s.p==="home"?homeView():s.p==="search"?searchView(s.q):s.p==="dish"?dishView(s.id):winView(s.id);
+}
+function homeView(){
+  if(!RC) return `<div class="empty">点上面的按钮随机选一道菜，或搜索食堂、菜名；也可以点 📷 上传窗口照片</div>`;
+  const {x,pair}=RC;
+  return `<div class="rcard"><div class="rtitle">为你推荐 · ${esc(RC.reason)}</div>
+    <div><span class="bigname">${esc(x.dish.n)}</span><span class="price">${fmtP(x.dish)}</span></div>
+    <div class="sub">${esc(x.canteen)} · ${esc(x.win.name)}</div>
+    ${pair?`<div class="pair">这道菜单点不成一餐，建议搭配：<b>${esc(pair.dish.n)}</b> ${fmtP(pair.dish)}（${esc(pair.win.name)}）　合计 ¥${Math.round((x.dish.p+pair.dish.p)*10)/10}${(x.dish.pt||pair.dish.pt)?"起":""}</div>`:""}
+    <div class="rbtn"><button data-act="rlike">👍 喜欢</button><button data-act="rdis">👎 不想吃</button>
+    <button data-act="rnext">换一个</button><button data-act="dish" data-id="${esc(x.id)}">查看详情 →</button></div>
+    ${RC.msg?`<div class="msg">${RC.msg}</div>`:""}</div>`;
+}
+function rowHtml(x){
+  return `<div class="srow" data-act="dish" data-id="${esc(x.id)}"><div><b>${esc(x.dish.n)}</b><span class="price">${fmtP(x.dish)}</span>
+    <div class="sub">${esc(x.canteen)} · ${esc(x.win.name)}</div></div><div class="cnt">👍 ${likes(x)} · 💬 ${nrev(x)}</div></div>`;
+}
+function searchView(q){
+  const terms=q.split(/[\s,，、;；]+/).filter(Boolean);
+  const body=terms.map(termView).join("");
+  return `<button class="back" data-act="back">← 返回</button>`+(body||`<div class="empty">没找到「${esc(q)}」，试试搜食堂或菜名</div>`);
+}
+function termView(q){
+  const nq=norm(q), ql=q.toLowerCase();
+  const cs=CANTEENS.filter(c=>norm(c.name).includes(nq));
+  const ws=Object.values(WINS).filter(w=>w.name.includes(q)||w.id.toLowerCase()===ql);
+  const ds=ALL.filter(x=>x.dish.n.includes(q));
+  let tag=null;
+  if(!cs.length&&!ws.length&&!ds.length) Object.keys(SYN).sort((a,b)=>b.length-a.length).some(k=>{if(q.includes(k)){tag=SYN[k];return true}});
+  const td=tag?ALL.filter(x=>x.dish.t.includes(tag)&&!ds.includes(x)):[];
+  let out="";
+  cs.forEach(c=>{
+    out+=`<div class="sec"><h3>${esc(c.name)}</h3>`+c.windows.map(w=>{
+      const items=ALL.filter(x=>x.win.id===w.id).sort((a,b)=>pop(b)-pop(a));
+      const top=items[0];
+      return `<div class="srow" data-act="win" data-id="${w.id}"><div><b>${esc(w.name)}</b></div>
+        <div class="cnt">${pop(top)>0?"人气菜："+esc(top.dish.n)+"（👍 "+likes(top)+"）":"暂无人气数据"}</div></div>`;
+    }).join("")+`</div>`;
+  });
+  if(ws.length) out+=`<div class="sec"><h3>窗口</h3>`+ws.map(w=>`<div class="srow" data-act="win" data-id="${w.id}"><div><b>${esc(w.name)}</b><div class="sub">${esc(w.canteen)}</div></div></div>`).join("")+`</div>`;
+  if(ds.length) out+=`<div class="sec"><h3>菜品「${esc(q)}」</h3>${ds.map(rowHtml).join("")}</div>`;
+  if(td.length) out+=`<div class="sec"><h3>「${esc(tag)}」口味的菜</h3>${td.map(rowHtml).join("")}</div>`;
+  return out;
+}
+function dishView(id){
+  const x=BY[id], r=rec(id);
+  return `<button class="back" data-act="back">← 返回</button><div class="sec">
+    <div><span class="bigname">${esc(x.dish.n)}</span><span class="price">${fmtP(x.dish)}</span></div>
+    <div class="sub">${esc(x.canteen)} · ${esc(x.win.name)}</div>
+    <div class="tags">${x.dish.t.map(esc).join(" · ")}</div>
+    <div class="btns" style="margin-top:12px"><button class="${r.myLike?"on":""}" data-act="like" data-id="${esc(id)}">👍 ${likes(x)}</button>
+    <button class="${r.myFav?"on":""}" data-act="fav" data-id="${esc(id)}">⭐ ${favs(x)}</button></div>
+    <div class="revbox" style="margin-top:14px"><b>评价（${nrev(x)}）</b>
+    ${r.rev.map(t=>`<div class="r">· ${esc(t)}</div>`).join("")||"<div class=\"r\">还没有评价，来写第一条吧</div>"}
+    <div class="add"><input data-rid="${esc(id)}" placeholder="写一句评价（60字内）"><button data-act="send" data-id="${esc(id)}">发送</button></div></div>
+    <button class="back" style="margin-top:12px" data-act="win" data-id="${x.win.id}">查看该窗口的其他菜品 →</button></div>`;
+}
+const OPEN=new Set();
+let SORT="mix";
+const SORTS=[["mix","综合推荐"],["like","点赞最多"],["fav","收藏最多"],["rev","评价最多"]];
+const BROAD=new Set(["荤","素"]);   // 过于宽泛的标签，不用于"猜你喜欢"
+const tasteScore=x=>x.dish.t.filter(t=>!BROAD.has(t)).reduce((a,t)=>a+Math.max(S.tag[t]||0,0),0);
+const tasteHits=x=>x.dish.t.filter(t=>!BROAD.has(t)&&(S.tag[t]||0)>0);
+function badgesOf(x,m){
+  const b=[];
+  if(m.L>0&&likes(x)===m.L) b.push(["like","🏆 本窗口点赞最高"]);
+  if(m.F>0&&favs(x)===m.F) b.push(["fav","⭐ 收藏最多"]);
+  if(m.R>0&&nrev(x)===m.R) b.push(["rev","💬 评价最多"]);
+  if(m.loved.has(x.id)) b.push(["taste","💚 猜你喜欢 · "+tasteHits(x).slice(0,2).join("、")]);
+  return b.map(([c,t])=>`<span class="bdg ${c}">${esc(t)}</span>`).join("");
+}
+function winView(id){
+  const w=WINS[id], items=ALL.filter(x=>x.win.id===id);
+  const anyData=items.some(x=>pop(x)>0||nrev(x)>0);
+  const m={L:Math.max(...items.map(likes)),F:Math.max(...items.map(favs)),R:Math.max(...items.map(nrev)),
+    loved:new Set(items.filter(x=>tasteScore(x)>0&&!rec(x.id).myLike&&!rec(x.id).myFav).sort((a,b)=>tasteScore(b)-tasteScore(a)).slice(0,3).map(x=>x.id))};
+  const key={like:likes,fav:favs,rev:nrev,mix:x=>pop(x)+Math.min(tasteScore(x),5)*4}[SORT];
+  const list=[...items].sort((a,b)=>key(b)-key(a));
+  let out=`<button class="back" data-act="back">← 返回</button><div class="sec"><h3>${esc(w.canteen)} · ${esc(w.name)}</h3>`;
+  out+=`<div class="sortbar">排序：${SORTS.map(([k,t])=>`<span class="chip ${SORT===k?"on":""}" data-act="sort" data-id="${k}">${t}</span>`).join("")}</div>`;
+  if(!anyData) out+=`<div class="notice">暂无人气数据，来做第一个评价吧</div>`;
+  out+=list.map(x=>{
+    const r=rec(x.id), open=OPEN.has(x.id);
+    return `<div class="dish"><div class="drow"><div><span class="dname">${esc(x.dish.n)}</span><span class="price">${fmtP(x.dish)}</span>
+      <div class="tags">${x.dish.t.map(esc).join(" · ")}</div></div>
+      <div class="rside"><div class="badges">${badgesOf(x,m)}</div>
+      <div class="btns"><button class="${r.myLike?"on":""}" data-act="like" data-id="${esc(x.id)}">👍 ${likes(x)}</button>
+      <button class="${r.myFav?"on":""}" data-act="fav" data-id="${esc(x.id)}">⭐ ${favs(x)}</button>
+      <button data-act="rev" data-id="${esc(x.id)}">💬 ${nrev(x)}</button></div></div></div>
+      ${open?`<div class="revbox">${r.rev.map(t=>`<div class="r">· ${esc(t)}</div>`).join("")||"还没有评价"}
+      <div class="add"><input data-rid="${esc(x.id)}" placeholder="写一句评价（60字内）"><button data-act="send" data-id="${esc(x.id)}">发送</button></div></div>`:""}</div>`;
+  }).join("");
+  return out+`</div>`;
+}
+
+// ================= 事件 =================
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-act]"); if(!el) return;
+  const a=el.dataset.act, id=el.dataset.id;
+  if(a==="win"){SORT="mix";go({p:"win",id})}
+  else if(a==="sort"){SORT=id;render()}
+  else if(a==="dish") go({p:"dish",id});
+  else if(a==="back"){if(stack.length>1)stack.pop();render()}
+  else if(a==="home"){stack=[{p:"home"}];document.getElementById("status").innerHTML="";render()}
+  else if(a==="rnd") pickRec();
+  else if(a==="rnext"){if(RC)addPref(RC.x.dish,-0.3);pickRec()}
+  else if(a==="rdis"){if(RC)addPref(RC.x.dish,-1);pickRec()}
+  else if(a==="rlike"){addPref(RC.x.dish,1);RC.msg="已记录：你喜欢这类口味，之后会多推荐相近的";render()}
+  else if(a==="like"||a==="fav"){
+    const r=rec(id), k=a, m=a==="like"?"myLike":"myFav";
+    r[m]=!r[m]; r[k]+=r[m]?1:-1; addPref(BY[id].dish,r[m]?1:-1); save(); render();
+  }
+  else if(a==="rev"){OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}
+  else if(a==="send") sendRev(id);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.rid){e.preventDefault();sendRev(e.target.dataset.rid)}
+});
+function sendRev(id){
+  const inp=[...document.querySelectorAll("input[data-rid]")].find(i=>i.dataset.rid===id);
+  const v=inp&&inp.value.trim(); if(!v) return;
+  rec(id).rev.push(v.slice(0,60)); OPEN.add(id); save(); render();
+}
+document.getElementById("sf").addEventListener("submit",e=>{
+  e.preventDefault();
+  const q=document.getElementById("q").value.trim(); if(!q) return;
+  document.getElementById("status").innerHTML="";
+  stack=[{p:"home"}]; go({p:"search",q});
+});
+
+// ================= 拍照识别窗口 =================
+const pic=document.getElementById("pic");
+pic.onchange=async()=>{
+  const f=pic.files[0]; if(!f) return;
+  const box=document.getElementById("status");
+  box.textContent="识别中…";
+  try{
+    const img=await shrink(f);
+    const r=await fetch("/api/recognize",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({image:img,windows:Object.values(WINS).map(w=>({id:w.id,name:w.canteen+" "+w.name}))})});
+    const d=await r.json();
+    if(d.error){box.textContent="识别失败："+d.error+"。试试在搜索框里搜窗口名";return}
+    let ids=(d.candidates||[]).filter(id=>WINS[id]);
+    if(!ids.length) ids=localMatch(d.read_text||"");
+    if(!ids.length){box.textContent="没认出来（读到："+(d.read_text||"无")+"）。试试在搜索框里搜窗口名";return}
+    box.innerHTML="读到："+esc(d.read_text||"")+"。是哪个窗口？<br>"+ids.map(id=>`<button data-act="win" data-id="${id}">${esc(WINS[id].canteen+" "+WINS[id].name)}</button>`).join("");
+  }catch(err){box.textContent="识别失败："+(err.message==="Failed to fetch"?"没连上本地服务，请确认命令窗口里 python server.py 还在运行，并且是用 http://localhost:8000 打开的页面":err.message)+"。也可以在搜索框里搜窗口名"}
+  pic.value="";
+};
+function localMatch(text){
+  const t=String(text).replace(/\s+/g,"");
+  if(!t) return [];
+  return Object.values(WINS).map(w=>{
+    const nm=w.name.replace(/\s+/g,""), grams=nm.length<2?[nm]:[...nm].slice(0,-1).map((c,i)=>nm.slice(i,i+2));
+    return {id:w.id,sc:grams.filter(g=>t.includes(g)).length};
+  }).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,3).map(x=>x.id);
+}
+function shrink(file){return new Promise((ok,no)=>{const im=new Image();
+  im.onload=()=>{const s=Math.min(1,1024/Math.max(im.width,im.height));const c=document.createElement("canvas");
+    c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",0.8))};
+  im.onerror=()=>no(new Error("图片读取失败"));im.src=URL.createObjectURL(file)})}
+
+render();
+</script>
+</body>
+</html>
